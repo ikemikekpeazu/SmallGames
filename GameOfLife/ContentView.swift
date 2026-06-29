@@ -17,6 +17,7 @@ struct ContentView: View {
     
     @State var timer = Timer.publish(every: 0.5, on: .main, in: .common)
     @State var timerSubscription: Cancellable? = nil
+    let directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)]
     
     var body: some View {
         Grid() {
@@ -33,7 +34,7 @@ struct ContentView: View {
             }
         }
         .onReceive(timer) { _ in
-            stepLogic()
+            stepLogicV2()
         }
         .onChange(of: isRunning, { _ , running in
             if running {
@@ -52,7 +53,7 @@ struct ContentView: View {
             }
         }
         Button("Next") {
-            stepLogic()
+            stepLogicV2()
         }
         .disabled(isRunning)
         Button(isRunning ? "Stop" : "Start") {
@@ -76,7 +77,7 @@ struct ContentView: View {
 
 
 extension ContentView {
-    private func stepLogic() {
+    private func stepLogicV1() {
         for row in states.indices {
             for column in states[row].indices {
                 var neighbors = 0
@@ -136,5 +137,32 @@ extension ContentView {
                 states[row][column] = nextStates[row][column]
             }
         }
+    }
+    private func stepLogicV2() {
+        for row in states.indices {
+            for column in states[row].indices {
+                var neighbors = 0
+                for (dr, dc) in directions {
+                    let newRow = row + dr
+                    let newColumn = column + dc
+                    
+                    if newRow >= 0 && newRow <= 19 && newColumn >= 0 && newColumn <= 19 && states[newRow][newColumn] {
+                        neighbors += 1
+                    }
+                }
+                
+                if states[row][column] && neighbors < 2 {
+                    nextStates[row][column] = false
+                } else if states[row][column] && neighbors > 3 {
+                    nextStates[row][column] = false
+                }
+                if !states[row][column] && neighbors == 3 {
+                    nextStates[row][column] = true
+                }
+            }
+        }
+        
+        states = nextStates
+        
     }
 }
