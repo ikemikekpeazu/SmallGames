@@ -74,6 +74,7 @@ struct ContentView: View {
 }
 
 
+
 extension ContentView {
     private func stepLogic() {
         for row in states.indices {
